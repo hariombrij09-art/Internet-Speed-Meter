@@ -77,8 +77,9 @@ class SpeedService : Service() {
             PixelFormat.TRANSLUCENT
         )
 
-        params.gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
-        params.y = 80
+        params.gravity = Gravity.TOP or Gravity.START
+        params.x = 10
+        params.y = 5
 
         windowManager.addView(speedView, params)
 
