@@ -13,6 +13,7 @@ import android.os.IBinder
 import android.os.Looper
 import android.net.TrafficStats
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.WindowManager
 import android.widget.TextView
 import android.content.Context
@@ -27,6 +28,9 @@ class SpeedService : Service() {
 
     private var lastRx = 0L
     private var lastTx = 0L
+    private val prefs by lazy {
+        getSharedPreferences("SpeedPosition", MODE_PRIVATE)
+    }
 
     private val updateRunnable = object : Runnable {
         override fun run() {
@@ -77,10 +81,46 @@ class SpeedService : Service() {
             PixelFormat.TRANSLUCENT
         )
 
-        params.gravity = Gravity.TOP or Gravity.END
-        params.x = 10
-        params.y = (35 * resources.displayMetrics.density).toInt()
+        params.gravity = Gravity.TOP or Gravity.START
+        params.x = prefs.getInt("position_x", 10)
+        params.y = prefs.getInt("position_y", 80)
 
+        var initialX = 0
+        var initialY = 0
+        var initialTouchX = 0f
+        var initialTouchY = 0f
+
+        speedView.setOnTouchListener { _, event ->
+
+            when (event.action) {
+
+                MotionEvent.ACTION_DOWN -> {
+                    initialX = params.x
+                    initialY = params.y
+                    initialTouchX = event.rawX
+                    initialTouchY = event.rawY
+                    true
+                }
+
+                MotionEvent.ACTION_MOVE -> {
+                    params.x = initialX + (event.rawX - initialTouchX).toInt()
+                    params.y = initialY + (event.rawY - initialTouchY).toInt()
+
+                    windowManager.updateViewLayout(speedView, params)
+                    true
+                }
+
+                MotionEvent.ACTION_UP -> {
+                    prefs.edit()
+                        .putInt("position_x", params.x)
+                        .putInt("position_y", params.y)
+                        .apply()
+                    true
+                }
+
+                else -> false
+            }
+        }
         windowManager.addView(speedView, params)
 
         lastRx = TrafficStats.getTotalRxBytes()
