@@ -65,7 +65,7 @@ class SpeedService : Service() {
             textSize = 9f
             setTextColor(Color.WHITE)
             setBackgroundColor(Color.argb(150, 0, 0, 0))
-            setPadding(2, 2, 2, 2)
+            setPadding(3, 3, 3, 3)
         }
 
         val params = WindowManager.LayoutParams(
