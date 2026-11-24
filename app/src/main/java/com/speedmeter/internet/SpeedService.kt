@@ -62,7 +62,7 @@ class SpeedService : Service() {
 
         speedView = TextView(this).apply {
             text = "↓ 0 KB/s  ↑ 0 KB/s"
-            textSize = 6f
+            textSize = 7f
             setTextColor(Color.WHITE)
             setBackgroundColor(Color.argb(150, 0, 0, 0))
             setPadding(2, 2, 2, 2)
