@@ -62,7 +62,7 @@ class SpeedService : Service() {
 
         speedView = TextView(this).apply {
             text = "↓ 0 KB/s  ↑ 0 KB/s"
-            textSize = 7f
+            textSize = 9f
             setTextColor(Color.WHITE)
             setBackgroundColor(Color.argb(150, 0, 0, 0))
             setPadding(2, 2, 2, 2)
@@ -77,9 +77,9 @@ class SpeedService : Service() {
             PixelFormat.TRANSLUCENT
         )
 
-        params.gravity = Gravity.TOP or Gravity.START
+        params.gravity = Gravity.TOP or Gravity.END
         params.x = 10
-        params.y = 0
+        params.y = (35 * resources.displayMetrics.density).toInt()
 
         windowManager.addView(speedView, params)
 
