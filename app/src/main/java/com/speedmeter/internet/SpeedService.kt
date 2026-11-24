@@ -62,10 +62,10 @@ class SpeedService : Service() {
 
         speedView = TextView(this).apply {
             text = "↓ 0 KB/s  ↑ 0 KB/s"
-            textSize = 13f
+            textSize = 6f
             setTextColor(Color.WHITE)
-            setBackgroundColor(Color.BLACK)
-            setPadding(12, 8, 12, 8)
+            setBackgroundColor(Color.argb(150, 0, 0, 0))
+            setPadding(2, 2, 2, 2)
         }
 
         val params = WindowManager.LayoutParams(
@@ -79,7 +79,7 @@ class SpeedService : Service() {
 
         params.gravity = Gravity.TOP or Gravity.START
         params.x = 10
-        params.y = 5
+        params.y = 0
 
         windowManager.addView(speedView, params)
 
