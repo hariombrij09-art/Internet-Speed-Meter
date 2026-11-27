@@ -10,6 +10,8 @@
 
     <application
         android:allowBackup="true"
+        android:icon="@drawable/ic_speed_logo"
+        android:roundIcon="@drawable/ic_speed_logo"
         android:label="Internet Speed Meter"
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
         android:usesCleartextTraffic="false">
