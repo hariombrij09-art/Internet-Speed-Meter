@@ -94,9 +94,9 @@ class SpeedService : Service() {
 
         speedView = TextView(this).apply {
             text = "↓ 0.0 KB/s   ↑ 0.0 KB/s"
-            textSize = 15f
+            textSize = 12f
             setTextColor(Color.WHITE)
-            setPadding(16, 10, 16, 10)
+            setPadding(8, 5, 8, 5)
             this.background = background
 
             setShadowLayer(
@@ -122,6 +122,34 @@ class SpeedService : Service() {
         params.x = 10
         params.y = 5
 
+        var initialX = 0
+        var initialY = 0
+        var initialTouchX = 0f
+        var initialTouchY = 0f
+
+        speedView.setOnTouchListener { _, event ->
+
+            when (event.action) {
+
+                android.view.MotionEvent.ACTION_DOWN -> {
+                    initialX = params.x
+                    initialY = params.y
+                    initialTouchX = event.rawX
+                    initialTouchY = event.rawY
+                    true
+                }
+
+                android.view.MotionEvent.ACTION_MOVE -> {
+                    params.x = initialX + (event.rawX - initialTouchX).toInt()
+                    params.y = initialY + (event.rawY - initialTouchY).toInt()
+
+                    windowManager.updateViewLayout(speedView, params)
+                    true
+                }
+
+                else -> false
+            }
+        }
         windowManager.addView(speedView, params)
 
         lastRx = TrafficStats.getTotalRxBytes()
