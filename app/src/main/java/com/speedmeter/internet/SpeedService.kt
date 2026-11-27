@@ -1,3 +1,4 @@
+
 package com.speedmeter.internet
 
 import android.app.Service
@@ -7,16 +8,19 @@ import android.app.NotificationManager
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.PixelFormat
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.net.TrafficStats
 import android.view.Gravity
-import android.view.MotionEvent
 import android.view.WindowManager
 import android.widget.TextView
 import android.content.Context
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.content.pm.ServiceInfo
 
 class SpeedService : Service() {
@@ -28,9 +32,6 @@ class SpeedService : Service() {
 
     private var lastRx = 0L
     private var lastTx = 0L
-    private val prefs by lazy {
-        getSharedPreferences("SpeedPosition", MODE_PRIVATE)
-    }
 
     private val updateRunnable = object : Runnable {
         override fun run() {
@@ -49,8 +50,28 @@ class SpeedService : Service() {
             lastRx = rx
             lastTx = tx
 
-            speedView.text =
-                "↓ ${formatSpeed(download)}  ↑ ${formatSpeed(upload)}"
+            val text = SpannableString(
+                "↓ ${formatSpeed(download)}   ↑ ${formatSpeed(upload)}"
+            )
+
+            val downEnd = text.indexOf("   ")
+            val upStart = downEnd + 3
+
+            text.setSpan(
+                ForegroundColorSpan(Color.rgb(22, 139, 255)),
+                0,
+                downEnd,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+
+            text.setSpan(
+                ForegroundColorSpan(Color.rgb(32, 230, 75)),
+                upStart,
+                text.length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+
+            speedView.text = text
 
             handler.postDelayed(this, 1000)
         }
@@ -64,12 +85,28 @@ class SpeedService : Service() {
         windowManager =
             getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
+        val background = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            setColor(Color.BLACK)
+            cornerRadius = 24f
+            setStroke(3, Color.rgb(22, 139, 255))
+        }
+
         speedView = TextView(this).apply {
-            text = "↓ 0 KB/s  ↑ 0 KB/s"
-            textSize = 9f
+            text = "↓ 0.0 KB/s   ↑ 0.0 KB/s"
+            textSize = 15f
             setTextColor(Color.WHITE)
-            setBackgroundColor(Color.argb(150, 0, 0, 0))
-            setPadding(3, 3, 3, 3)
+            setPadding(16, 10, 16, 10)
+            this.background = background
+
+            setShadowLayer(
+                8f,
+                0f,
+                0f,
+                Color.rgb(22, 139, 255)
+            )
+
+            setLayerType(TextView.LAYER_TYPE_SOFTWARE, null)
         }
 
         val params = WindowManager.LayoutParams(
@@ -82,45 +119,9 @@ class SpeedService : Service() {
         )
 
         params.gravity = Gravity.TOP or Gravity.START
-        params.x = prefs.getInt("position_x", 10)
-        params.y = prefs.getInt("position_y", 80)
+        params.x = 10
+        params.y = 5
 
-        var initialX = 0
-        var initialY = 0
-        var initialTouchX = 0f
-        var initialTouchY = 0f
-
-        speedView.setOnTouchListener { _, event ->
-
-            when (event.action) {
-
-                MotionEvent.ACTION_DOWN -> {
-                    initialX = params.x
-                    initialY = params.y
-                    initialTouchX = event.rawX
-                    initialTouchY = event.rawY
-                    true
-                }
-
-                MotionEvent.ACTION_MOVE -> {
-                    params.x = initialX + (event.rawX - initialTouchX).toInt()
-                    params.y = initialY + (event.rawY - initialTouchY).toInt()
-
-                    windowManager.updateViewLayout(speedView, params)
-                    true
-                }
-
-                MotionEvent.ACTION_UP -> {
-                    prefs.edit()
-                        .putInt("position_x", params.x)
-                        .putInt("position_y", params.y)
-                        .apply()
-                    true
-                }
-
-                else -> false
-            }
-        }
         windowManager.addView(speedView, params)
 
         lastRx = TrafficStats.getTotalRxBytes()
